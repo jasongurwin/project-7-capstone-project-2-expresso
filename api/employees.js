@@ -7,7 +7,7 @@ const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite'
 
 // Creates Timesheets Router
 const timesheetsRouter = require('./timesheets.js')
-employeesRouter.use('/:id/timesheets',timesheetsRouter);
+employeesRouter.use('/:employeeId/timesheets',timesheetsRouter);
 
 //Looks up Employee by ID, throws error if doesn't exist
 
@@ -42,5 +42,20 @@ employeesRouter.get('/', (req, res, next) => {
 employeesRouter.get('/:employeeId', (req, res, next) => {
   res.status(200).json({employee: req.employee});
 });
+
+// // GET /employees/:timesheets
+// employeesRouter.get('/:employeeId/timesheets', (req, res, next) => {
+//   console.log(req.params.employeeId)
+//   db.all('SELECT * FROM Timesheet WHERE Timesheet.employee_id = $employeeId',
+//   {$employeeId: req.params.employeeId},
+//     (err, timesheets) => {
+//       if (err) {
+//         next(err);
+//       } else {
+//         res.status(200).json({timesheets: timesheets});
+//       }
+//     });
+// });
+
 
 module.exports = employeesRouter;
