@@ -6,6 +6,7 @@ const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite'
 
 // GET /employees/:employeeId/timesheets
 timesheetsRouter.get('/', (req, res, next) => {
+  console.log(req.params.employeeId)
   db.all('SELECT * FROM Timesheet WHERE Timesheet.employee_id = $employeeId',
   {$employeeId: req.params.employeeId},
     (err, timesheets) => {
