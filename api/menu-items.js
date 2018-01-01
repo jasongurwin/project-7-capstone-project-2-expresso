@@ -18,4 +18,47 @@ menuItemsRouter.get('/', (req, res, next) => {
     });
 });
 
+// POST /menus/:menuId/menu-items
+menuItemsRouter.post('/', (req, res, next) => {
+  const name = req.body.menuItem.name,
+        description = req.body.menuItem.description,
+        inventory = req.body.menuItem.inventory,
+        price = req.body.menuItem.price,
+        menuId = req.menu.id;
+  if (!name || !description || !inventory || !price || !menuId) {
+    return res.sendStatus(400);
+  }
+
+  const sql = 'INSERT INTO MenuItem (name, description, inventory, price, menu_id)' +
+      'VALUES ($name, $description, $inventory, $price, $menuId)';
+  const values = {
+    $name: name,
+    $description: description,
+    $inventory: inventory,
+    $price: price,
+    $menuId: menuId
+  };
+
+  db.run(sql, values, function(error) {
+    if (error) {
+      next(error);
+    } else {
+      db.get(`SELECT * FROM MenuItem WHERE MenuItem.id = ${this.lastID}`,
+        (error, menuItems) => {
+          res.status(201).json({menuItems: menuItems});
+        });
+    }
+  });
+});
+
+// db.run(`CREATE TABLE IF NOT EXISTS MenuItem(
+//   id INTEGER PRIMARY KEY,
+//   name TEXT NOT NULL,
+//   description TEXT,
+//   inventory INTEGER NOT NULL,
+//   price INTEGER NOT NULL,
+//   menu_id INTEGER NOT NULL,
+//   FOREIGN KEY(menu_id) REFERENCES Menu(id)
+// );`);
+
 module.exports = menuItemsRouter;

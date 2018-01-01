@@ -24,7 +24,7 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
   });
 });
 
-
+// GET /menus
 menusRouter.get('/', (req, res, next) => {
   db.all('SELECT * FROM Menu',
     (err, menus) => {
@@ -36,10 +36,39 @@ menusRouter.get('/', (req, res, next) => {
     });
 });
 
-// GET /employees/:menuId
+// GET /menus/:menuId
 menusRouter.get('/:menuId', (req, res, next) => {
   res.status(200).json({menu: req.menu});
 });
 
+menusRouter.post('/', (req, res, next) => {
+  const title = req.body.menu.title;
+  console.log(title)
+  if (!title) {
+    return res.sendStatus(400);
+  }
+
+  const sql = 'INSERT INTO Menu (title)' +
+      'VALUES ($title)';
+  const values = {
+    $title: title
+  };
+
+  db.run(sql, values, function(error) {
+    if (error) {
+      next(error);
+    } else {
+      db.get(`SELECT * FROM Menu WHERE Menu.id = ${this.lastID}`,
+        (error, menu) => {
+          res.status(201).json({menu: menu});
+        });
+    }
+  });
+});
+
+// db.run(`CREATE TABLE IF NOT EXISTS Menu(
+//   id INTEGER PRIMARY KEY,
+//   title TEXT NOT NULL
+// );`);
 
 module.exports = menusRouter;

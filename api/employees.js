@@ -40,4 +40,45 @@ employeesRouter.get('/:employeeId', (req, res, next) => {
   res.status(200).json({employee: req.employee});
 });
 
+// POST /employees/
+
+  employeesRouter.post('/', (req, res, next) => {
+    const name = req.body.employee.name,
+          wage = req.body.employee.wage,
+          position = req.body.employee.position,
+          isCurrentEmployee = req.body.employee.isCurrentEmployee === 0 ? 0 : 1;
+    if (!name || !wage || !position) {
+      return res.sendStatus(400);
+    }
+
+    const sql = 'INSERT INTO Employee (name, wage, position, is_current_employee)' +
+        'VALUES ($name, $wage, $position, $isCurrentEmployee)';
+    const values = {
+      $name: name,
+      $wage: wage,
+      $position: position,
+      $isCurrentEmployee: isCurrentEmployee
+    };
+
+    db.run(sql, values, function(error) {
+      if (error) {
+        next(error);
+      } else {
+        db.get(`SELECT * FROM Employee WHERE Employee.id = ${this.lastID}`,
+          (error, employee) => {
+            res.status(201).json({employee: employee});
+          });
+      }
+    });
+  });
+
+// db.run(`CREATE TABLE IF NOT EXISTS Employee(
+//   id INTEGER PRIMARY KEY,
+//   name TEXT NOT NULL,
+//   position TEXT NOT NULL,
+//   wage INTEGER NOT NULL,
+//   is_current_employee INTEGER NOT NULL DEFAULT "1"
+// );`);
+
+
 module.exports = employeesRouter;
