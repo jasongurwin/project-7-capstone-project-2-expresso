@@ -72,6 +72,23 @@ employeesRouter.get('/:employeeId', (req, res, next) => {
     });
   });
 
+  // Delete /employees/:employeeId/
+    employeesRouter.delete('/:employeeId', (req, res, next) => {
+      const sql = 'UPDATE Employee SET is_current_employee = 0 WHERE Employee.id = $employeeId';
+      const values = {$employeeId: req.params.employeeId};
+
+      db.run(sql, values, (error) => {
+        if (error) {
+          next(error);
+        } else {
+          db.get(`SELECT * FROM Employee WHERE Employee.id = ${req.params.employeeId}`,
+            (error, employee) => {
+              res.status(200).json({employee: employee});
+            });
+        }
+      });
+    });
+
 // db.run(`CREATE TABLE IF NOT EXISTS Employee(
 //   id INTEGER PRIMARY KEY,
 //   name TEXT NOT NULL,

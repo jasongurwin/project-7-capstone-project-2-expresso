@@ -3,10 +3,25 @@ const timesheetsRouter = express.Router({mergeParams: true});
 const sqlite3 = require('sqlite3');
 const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
+//Checks for valid TimeSheet ID
+timesheetsRouter.param('timesheetId', (req, res, next, timesheetId) => {
+  const sql = 'SELECT * FROM Timesheet WHERE Timesheet.id = $timesheetId';
+  const values = {$timesheetId: timesheetId};
+  db.get(sql, values, (error, timesheet) => {
+    if (error) {
+      next(error);
+    } else if (timesheet) {
+      next();
+    } else {
+      res.sendStatus(404);
+    }
+  });
+});
+
 
 // GET /employees/:employeeId/timesheets
 timesheetsRouter.get('/', (req, res, next) => {
-  console.log(req.params.employeeId)
+  // console.log(req.params.employeeId)
   db.all('SELECT * FROM Timesheet WHERE Timesheet.employee_id = $employeeId',
   {$employeeId: req.params.employeeId},
     (err, timesheets) => {
@@ -25,7 +40,7 @@ timesheetsRouter.get('/', (req, res, next) => {
           rate = req.body.timesheet.rate,
           date = req.body.timesheet.date,
           employeeId = req.employee.id;
-          console.log(employeeId)
+          // console.log(employeeId)
     if (!hours || !rate || !date || !employeeId) {
       return res.sendStatus(400);
     }
@@ -47,6 +62,20 @@ timesheetsRouter.get('/', (req, res, next) => {
           (error, timesheet) => {
             res.status(201).json({timesheet: timesheet});
           });
+      }
+    });
+  });
+
+// Delete /employees/:employeeId/timesheets/:timesheetId
+  timesheetsRouter.delete('/:timesheetId', (req, res, next) => {
+    const sql = 'DELETE FROM TimeSheet WHERE Timesheet.id = $timesheetId';
+    const values = {$timesheetId: req.params.timesheetId};
+
+    db.run(sql, values, (error) => {
+      if (error) {
+        next(error);
+      } else {
+        res.sendStatus(204);
       }
     });
   });

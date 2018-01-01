@@ -16,6 +16,7 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
       next(error);
     } else if (menu) {
       req.menu = menu;
+      // console.log(req.menu)
       next();
 
     } else {
@@ -43,7 +44,7 @@ menusRouter.get('/:menuId', (req, res, next) => {
 
 menusRouter.post('/', (req, res, next) => {
   const title = req.body.menu.title;
-  console.log(title)
+  // console.log(title)
   if (!title) {
     return res.sendStatus(400);
   }
@@ -65,6 +66,38 @@ menusRouter.post('/', (req, res, next) => {
     }
   });
 });
+
+// DELETE /menus/:menuId
+
+menusRouter.delete('/:menuId', (req, res, next) => {
+  const sql = 'SELECT * FROM MenuItem WHERE MenuItem.menu_id = $menuId';
+  const values = {$menuId: req.params.menuId};
+
+  db.get(sql, values, (error, menuItem) => {
+    if (error) {
+      next(error);
+    } else if (menuItem) {
+      // console.log(menuItem)
+      res.sendStatus(400);
+    } else {
+      // console.log(menuItem)
+
+        const sql = 'DELETE FROM Menu WHERE Menu.id = $menuId';
+        // console.log(sql)
+        const values = {$menuId: req.params.menuId};
+        // console.log(values)
+
+        db.run(sql, values, (error) => {
+          if (error) {
+            next(error);
+          } else {
+            res.sendStatus(204);
+    }
+  });
+}
+});
+});
+
 
 // db.run(`CREATE TABLE IF NOT EXISTS Menu(
 //   id INTEGER PRIMARY KEY,
