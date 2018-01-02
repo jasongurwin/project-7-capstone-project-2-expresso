@@ -67,6 +67,30 @@ menusRouter.post('/', (req, res, next) => {
   });
 });
 
+// PUT /menus/:menuId
+
+menusRouter.put('/:menuId', (req,res,next) => {
+  const title = req.body.menu.title
+
+  if (!title) {
+    return res.sendStatus(400)
+  }
+
+  const sql = 'UPDATE Menu SET title = $title'
+  const values = {$title: title}
+
+  db.run(sql,values,(error) => {
+    if (error){
+      next(error)
+    } else {
+      db.get(`SELECT * FROM Menu WHERE Menu.id = ${req.params.menuId}`, (error,menu) => {
+        res.status(200).json({menu: menu})
+      })
+    }
+  })
+
+});
+
 // DELETE /menus/:menuId
 
 menusRouter.delete('/:menuId', (req, res, next) => {
@@ -97,11 +121,5 @@ menusRouter.delete('/:menuId', (req, res, next) => {
 }
 });
 });
-
-
-// db.run(`CREATE TABLE IF NOT EXISTS Menu(
-//   id INTEGER PRIMARY KEY,
-//   title TEXT NOT NULL
-// );`);
 
 module.exports = menusRouter;

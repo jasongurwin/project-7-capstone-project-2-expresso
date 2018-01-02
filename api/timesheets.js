@@ -66,6 +66,36 @@ timesheetsRouter.get('/', (req, res, next) => {
     });
   });
 
+  // PUT /employees/:employeeId/timesheets/:timesheetsId/
+  timesheetsRouter.put('/:timesheetId', (req, res, next) => {
+    const hours = req.body.timesheet.hours,
+          rate = req.body.timesheet.rate,
+          date = req.body.timesheet.date,
+          employeeId = req.employee.id;
+    if (!hours || !rate || !date || !employeeId) {
+      return res.sendStatus(400);
+    }
+    const sql = 'UPDATE Timesheet SET hours = $hours, rate = $rate, date = $date WHERE Timesheet.employee_id = $employeeId';
+    const values = {
+      $hours: hours,
+      $rate: rate,
+      $date: date,
+      $employeeId: employeeId
+    };
+
+
+    db.run(sql, values, function(error) {
+      if (error) {
+        next(error);
+      } else {
+        db.get(`SELECT * FROM Timesheet WHERE Timesheet.id = ${req.params.timesheetId}`,
+          (error, timesheet) => {
+            res.status(200).json({timesheet: timesheet});
+          });
+      }
+    });
+  });
+
 // Delete /employees/:employeeId/timesheets/:timesheetId
   timesheetsRouter.delete('/:timesheetId', (req, res, next) => {
     const sql = 'DELETE FROM TimeSheet WHERE Timesheet.id = $timesheetId';
@@ -80,13 +110,5 @@ timesheetsRouter.get('/', (req, res, next) => {
     });
   });
 
-module.exports = timesheetsRouter;
 
-// db.run(`CREATE TABLE IF NOT EXISTS Timesheet(
-//   id INTEGER PRIMARY KEY,
-//   hours INTEGER NOT NULL,
-//   rate INTEGER NOT NULL,
-//   date INTEGER NOT NULL,
-//   employee_id INTEGER NOT NULL,
-//   FOREIGN KEY(employee_id) REFERENCES Employee(id)
-// );`);
+module.exports = timesheetsRouter;

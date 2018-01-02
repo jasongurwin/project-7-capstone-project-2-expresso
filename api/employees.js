@@ -72,6 +72,38 @@ employeesRouter.get('/:employeeId', (req, res, next) => {
     });
   });
 
+  // PUT /employees/:employeeId/
+  employeesRouter.put('/:employeeId', (req, res, next) => {
+    const name = req.body.employee.name,
+          wage = req.body.employee.wage,
+          position = req.body.employee.position,
+          isCurrentEmployee = req.body.employee.isCurrentEmployee === 0 ? 0 : 1;
+    if (!name || !wage || !position) {
+      return res.sendStatus(400);
+    }
+
+    const sql = 'UPDATE Employee SET name = $name, wage = $wage, position = $position, is_current_employee = $isCurrentEmployee WHERE Employee.id = $employeeId';
+    const values = {
+      $name: name,
+      $wage: wage,
+      $position: position,
+      $isCurrentEmployee: isCurrentEmployee,
+      $employeeId: req.params.employeeId
+    };
+
+    db.run(sql, values, function(error) {
+      if (error) {
+        next(error);
+      } else {
+        db.get(`SELECT * FROM Employee WHERE Employee.id = ${req.params.employeeId}`,
+          (error, employee) => {
+            res.status(200).json({employee: employee});
+          });
+      }
+    });
+  });
+
+
   // Delete /employees/:employeeId/
     employeesRouter.delete('/:employeeId', (req, res, next) => {
       const sql = 'UPDATE Employee SET is_current_employee = 0 WHERE Employee.id = $employeeId';
@@ -88,14 +120,5 @@ employeesRouter.get('/:employeeId', (req, res, next) => {
         }
       });
     });
-
-// db.run(`CREATE TABLE IF NOT EXISTS Employee(
-//   id INTEGER PRIMARY KEY,
-//   name TEXT NOT NULL,
-//   position TEXT NOT NULL,
-//   wage INTEGER NOT NULL,
-//   is_current_employee INTEGER NOT NULL DEFAULT "1"
-// );`);
-
 
 module.exports = employeesRouter;
