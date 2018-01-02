@@ -75,19 +75,41 @@ menuItemsRouter.put('/:menuItemId', (req,res,next) => {
         description = req.body.menuItem.description,
         inventory = req.body.menuItem.inventory,
         price = req.body.menuItem.price,
-        menuId = req.menu.id;
+        menuId = req.menu.id,
+        menuItemId = req.params.menuItemId;
 
-  if (!name || !description || !inventory || !price || !menuId) {
+      //   db.run(`CREATE TABLE IF NOT EXISTS MenuItem(
+      //     id INTEGER PRIMARY KEY,
+      //     name TEXT NOT NULL,
+      //     description TEXT,
+      //     inventory INTEGER NOT NULL,
+      //     price INTEGER NOT NULL,
+      //     menu_id INTEGER NOT NULL,
+      //     FOREIGN KEY(menu_id) REFERENCES Menu(id)
+      //   );`);
+      // });
+
+
+        //
+        // console.log(`Name ${req.body.menuItem.name}`)
+        // console.log(`Description"${req.body.menuItem.description}`)
+        // console.log(`Inventory ${req.body.menuItem.inventory}`)
+        // console.log(`Price ${req.body.menuItem.price}`)
+        // console.log(`MenuId ${req.menu.id}`)
+        // console.log(`MenuItemId ${req.params.menuItemId}`)
+
+  if (!name || !inventory || !price || !menuId || !menuItemId) {
     return res.sendStatus(400);
   }
 
-  const sql = 'UPDATE menuItem SET name = $name, description = $description, inventory = $inventory, price = $price WHERE menu_id = $menuId'
-  const values = {$name: name, $description: description, $inventory: inventory, $price: price, $menuId: menuId}
+  const sql = 'UPDATE menuItem SET name = $name, description = $description, inventory = $inventory, price = $price, menu_id = $menuId WHERE id = $menuItemId'
+  const values = {$name: name, $description: description, $inventory: inventory, $price: price, $menuId: menuId, $menuItemId: menuItemId}
 
   db.run(sql, values, error => {
     if (error) {
       next(error)
     } else {
+
       db.get(`SELECT * FROM MenuItem WHERE MenuItem.id = ${req.params.menuItemId}`,
       (error, menuItem) => {
         res.status(200).json({menuItem: menuItem});
